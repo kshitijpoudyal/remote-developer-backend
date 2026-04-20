@@ -6,7 +6,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ status: "error", message: "Method not allowed" });
   }
 
-  const apiKey = req.headers["x-api-key"];
+  const apiKey = Array.isArray(req.headers["x-api-key"])
+    ? req.headers["x-api-key"][0]
+    : req.headers["x-api-key"];
   if (!apiKey || apiKey !== process.env.API_KEY) {
     return res.status(401).json({ status: "error", message: "Unauthorized" });
   }
