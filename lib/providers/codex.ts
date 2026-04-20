@@ -1,8 +1,7 @@
 import OpenAI from "openai";
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 export async function callCodex(prompt: string): Promise<{ diff: string; summary: string }> {
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const completion = await client.chat.completions.create({
     model: "gpt-4o",
     messages: [
