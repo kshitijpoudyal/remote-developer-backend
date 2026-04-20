@@ -4,7 +4,16 @@
       "Bash(git init:*)",
       "Bash(git remote:*)",
       "Bash(git config:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(vercel whoami:*)",
+      "Bash(vercel ls:*)",
+      "Bash(vercel link:*)",
+      "Bash(vercel inspect:*)",
+      "Bash(vercel domains:*)",
+      "Bash(npm install:*)",
+      "Bash(npm list:*)",
+      "Bash(npx tsc:*)",
+      "Bash(vercel logs:*)"
     ]
   }
 }
