@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dev Portal</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0d0f14" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Dev Portal" />
+  <link rel="apple-touch-icon" href="/icon-192.svg" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0f14;
+      --surface:   #161b24;
+      --border:    #262d3a;
+      --muted:     #3d4a5c;
+      --text:      #e2e8f0;
+      --sub:       #8899aa;
+      --accent:    #4f8ef7;
+      --accent-hi: #7cb4ff;
+      --green:     #34d399;
+      --red:       #f87171;
+      --radius:    10px;
+      --font:      'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    header {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo { font-size: 1rem; letter-spacing: 0.12em; color: var(--accent); text-transform: uppercase; }
+
+    .api-key-wrap { display: flex; align-items: center; gap: 0.5rem; }
+    .api-key-wrap label { color: var(--sub); font-size: 0.75rem; letter-spacing: 0.05em; }
+
+    .card {
+      width: 100%;
+      max-width: 680px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 0.4rem; }
+    .field label { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sub); }
+
+    input[type="text"],
+    input[type="password"],
+    select,
+    textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      padding: 0.6rem 0.85rem;
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    select:focus,
+    textarea:focus { border-color: var(--accent); }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238899aa' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      padding-right: 2rem;
+      cursor: pointer;
+    }
+
+    .prompt-row { display: flex; gap: 0.5rem; align-items: flex-start; }
+
+    textarea { resize: vertical; min-height: 90px; flex: 1; }
+
+    .mic-btn {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--sub);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, color 0.15s;
+      margin-top: 2px;
+    }
+
+    .mic-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .mic-btn.recording {
+      border-color: var(--red);
+      color: var(--red);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.5); }
+      50%       { box-shadow: 0 0 0 8px rgba(248,113,113,0); }
+    }
+
+    .mic-btn svg { pointer-events: none; }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--sub);
+      user-select: none;
+    }
+
+    .toggle-label-active { color: var(--text); }
+
+    .toggle { position: relative; width: 42px; height: 22px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+    .track {
+      position: absolute;
+      inset: 0;
+      background: var(--muted);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .track::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 16px; height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    .toggle input:checked ~ .track { background: var(--accent); }
+    .toggle input:checked ~ .track::after { transform: translateX(20px); }
+
+    .submit-btn {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      background: var(--accent);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-family: var(--font);
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    .submit-btn:hover { background: var(--accent-hi); }
+    .submit-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .results { width: 100%; max-width: 680px; margin-top: 1.5rem; }
+    .results:empty { display: none; }
+
+    .loader {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--sub);
+      font-size: 0.85rem;
+    }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .result-card.success { border-color: rgba(52,211,153,0.35); }
+    .result-card.error   { border-color: rgba(248,113,113,0.35); }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .result-card.success .result-header { color: var(--green); }
+    .result-card.error   .result-header { color: var(--red);   }
+
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+    .result-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+    .result-section { display: flex; flex-direction: column; gap: 0.35rem; }
+
+    .result-section-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--sub);
+    }
+
+    .summary-text { font-size: 0.9rem; color: var(--text); line-height: 1.7; }
+    .error-text   { font-size: 0.9rem; color: var(--red);  line-height: 1.6; }
+
+    .file-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+    .chip {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.78rem;
+      color: var(--accent);
+      word-break: break-all;
+    }
+
+    .link-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--accent);
+      text-decoration: none;
+      font-family: var(--font);
+      font-size: 0.8rem;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .link-btn:hover { border-color: var(--accent); color: var(--accent-hi); }
+    .link-btn svg { flex-shrink: 0; }
+
+    .install-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.85rem;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--accent);
+      font-family: var(--font);
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .install-btn:hover { background: var(--accent); color: #fff; }
+
+    @media (max-width: 480px) {
+      .card { padding: 1.25rem; }
+      header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <header>
+    <span class="logo">&#x25B8; dev portal</span>
+    <button class="install-btn" id="installBtn" style="display:none" title="Add to home screen">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+      Install app
+    </button>
+    <div class="api-key-wrap">
+      <label for="apiKeyInput">API KEY</label>
+      <input type="password" id="apiKeyInput" placeholder="paste your key…" style="width:180px" autocomplete="off" spellcheck="false" />
+    </div>
+  </header>
+
+  <div class="card">
+
+    <div class="field">
+      <label for="repoSelect">Repository</label>
+      <select id="repoSelect">
+        <option value="" disabled selected>Enter API key to load repos…</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="promptInput">Prompt</label>
+      <div class="prompt-row">
+        <textarea id="promptInput" placeholder="Describe the change you want… or click the mic" spellcheck="false"></textarea>
+        <button class="mic-btn" id="micBtn" title="Click to dictate" aria-label="Toggle voice input">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="2" width="6" height="13" rx="3"/>
+            <path d="M5 10a7 7 0 0 0 14 0"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="9"  y1="23" x2="15" y2="23"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <span id="labelCommit" class="toggle-label-active">Direct commit</span>
+      <label class="toggle" aria-label="Create pull request">
+        <input type="checkbox" id="prToggle" />
+        <span class="track"></span>
+      </label>
+      <span id="labelPR">Create PR</span>
+    </div>
+
+    <button class="submit-btn" id="submitBtn">Run</button>
+
+  </div>
+
+  <div class="results" id="results"></div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const apiKeyInput = document.getElementById('apiKeyInput');
+  const repoSelect  = document.getElementById('repoSelect');
+  const promptInput = document.getElementById('promptInput');
+  const micBtn      = document.getElementById('micBtn');
+  const prToggle    = document.getElementById('prToggle');
+  const labelCommit = document.getElementById('labelCommit');
+  const labelPR     = document.getElementById('labelPR');
+  const submitBtn   = document.getElementById('submitBtn');
+  const resultsEl   = document.getElementById('results');
+
+  // ── API key persistence ──────────────────────────────────────────
+  const LS_KEY = 'devportal_apikey';
+
+  function loadApiKey() {
+    const saved = localStorage.getItem(LS_KEY);
+    if (saved) apiKeyInput.value = saved;
+  }
+
+  apiKeyInput.addEventListener('change', () => {
+    const val = apiKeyInput.value.trim();
+    if (val) { localStorage.setItem(LS_KEY, val); fetchRepos(val); }
+    else     { localStorage.removeItem(LS_KEY); resetRepoSelect('Enter API key to load repos…'); }
+  });
+
+  // ── Repo dropdown ────────────────────────────────────────────────
+  function resetRepoSelect(msg) {
+    repoSelect.innerHTML = `<option value="" disabled selected>${msg}</option>`;
+    removeFreeText();
+  }
+
+  async function fetchRepos(key) {
+    resetRepoSelect('Loading…');
+    try {
+      const res = await fetch('/api/repos', { headers: { 'x-api-key': key } });
+      if (res.status === 401) { resetRepoSelect('Invalid API key'); return; }
+      if (!res.ok) throw new Error();
+      const repos = await res.json();
+
+      repoSelect.innerHTML = '<option value="" disabled selected>Select a repo…</option>';
+
+      (Array.isArray(repos) ? repos : []).forEach(({ alias, repo }) => {
+        const opt = document.createElement('option');
+        opt.value = alias;
+        opt.textContent = `${alias}  (${repo})`;
+        repoSelect.appendChild(opt);
+      });
+
+      const manual = document.createElement('option');
+      manual.value = '__other__';
+      manual.textContent = 'Other (type manually)…';
+      repoSelect.appendChild(manual);
+    } catch {
+      resetRepoSelect('Failed to load — check console');
+    }
+  }
+
+  let freeTextInput = null;
+
+  function removeFreeText() {
+    const el = document.getElementById('freeTextRepo');
+    if (el) el.remove();
+    freeTextInput = null;
+  }
+
+  repoSelect.addEventListener('change', () => {
+    if (repoSelect.value === '__other__') {
+      if (!document.getElementById('freeTextRepo')) {
+        freeTextInput = document.createElement('input');
+        freeTextInput.type = 'text';
+        freeTextInput.id = 'freeTextRepo';
+        freeTextInput.placeholder = 'owner/repo or alias';
+        freeTextInput.spellcheck = false;
+        repoSelect.parentElement.appendChild(freeTextInput);
+      }
+    } else {
+      removeFreeText();
+    }
+  });
+
+  function resolvedRepo() {
+    if (repoSelect.value === '__other__') return freeTextInput ? freeTextInput.value.trim() : '';
+    return repoSelect.value || '';
+  }
+
+  // ── Toggle labels ────────────────────────────────────────────────
+  prToggle.addEventListener('change', () => {
+    const pr = prToggle.checked;
+    labelCommit.classList.toggle('toggle-label-active', !pr);
+    labelPR.classList.toggle('toggle-label-active', pr);
+  });
+
+  // ── Voice input ──────────────────────────────────────────────────
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let isRecording = false;
+
+  if (!SR) {
+    micBtn.title = 'Speech not supported in this browser';
+    micBtn.style.opacity = '0.3';
+    micBtn.disabled = true;
+  } else {
+    recognition = new SR();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    let committed = '';
+
+    recognition.onstart = () => {
+      isRecording = true;
+      micBtn.classList.add('recording');
+      committed = promptInput.value;
+    };
+
+    recognition.onresult = (e) => {
+      let interim = '', final = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) final += t; else interim += t;
+      }
+      if (final) committed += (committed ? ' ' : '') + final.trim();
+      promptInput.value = committed + (interim ? ' ' + interim : '');
+      promptInput.scrollTop = promptInput.scrollHeight;
+    };
+
+    recognition.onerror = (e) => { if (e.error !== 'aborted') console.warn('[speech]', e.error); stopRec(); };
+    recognition.onend = stopRec;
+  }
+
+  function stopRec() {
+    isRecording = false;
+    micBtn.classList.remove('recording');
+  }
+
+  micBtn.addEventListener('click', () => {
+    if (!recognition) return;
+    if (isRecording) { recognition.stop(); }
+    else { try { recognition.start(); } catch {} }
+  });
+
+  // ── Submit ───────────────────────────────────────────────────────
+  submitBtn.addEventListener('click', async () => {
+    const key    = apiKeyInput.value.trim();
+    const repo   = resolvedRepo();
+    const prompt = promptInput.value.trim();
+
+    if (!key)    { flash('Enter your API key first.'); return; }
+    if (!prompt) { flash('Enter a prompt.'); return; }
+    if (isRecording && recognition) recognition.stop();
+
+    setLoading(true);
+    showLoader();
+
+    const body = { prompt, create_pr: prToggle.checked };
+    if (repo) body.repo = repo;
+
+    try {
+      const res = await fetch('/api/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      renderResult(res.ok && data.status === 'success' ? 'success' : 'error', data);
+    } catch (err) {
+      renderResult('error', { message: err.message || 'Network error' });
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  // ── UI helpers ───────────────────────────────────────────────────
+  function setLoading(on) {
+    submitBtn.disabled = on;
+    submitBtn.textContent = on ? 'Running…' : 'Run';
+  }
+
+  function showLoader() {
+    resultsEl.innerHTML = `<div class="loader"><div class="spinner"></div><span>Talking to Claude…</span></div>`;
+  }
+
+  function renderResult(type, data) {
+    const ok = type === 'success';
+
+    let filesHtml = '';
+    const files = data.changedFiles;
+    if (Array.isArray(files) && files.length > 0) {
+      const chips = files.map(f => `<span class="chip">${esc(typeof f === 'string' ? f : f.path)}</span>`).join('');
+      filesHtml = `<div class="result-section"><span class="result-section-label">Changed files</span><div class="file-chips">${chips}</div></div>`;
+    }
+
+    let summaryHtml = '';
+    if (data.summary) {
+      summaryHtml = `<div class="result-section"><span class="result-section-label">Summary</span><p class="summary-text">${esc(data.summary)}</p></div>`;
+    }
+
+    let errorHtml = '';
+    if (!ok && data.message) {
+      errorHtml = `<div class="result-section"><p class="error-text">${esc(data.message)}</p></div>`;
+    }
+
+    const links = [];
+    if (data.pr_url)     links.push({ href: data.pr_url,     label: 'Open PR',      icon: prIcon() });
+    if (data.commit_url) links.push({ href: data.commit_url, label: 'View commit',   icon: commitIcon() });
+
+    let linksHtml = '';
+    if (links.length) {
+      const anchors = links.map(({ href, label, icon }) =>
+        `<a class="link-btn" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${icon}${esc(label)}</a>`
+      ).join('');
+      linksHtml = `<div class="result-section"><div class="link-row">${anchors}</div></div>`;
+    }
+
+    resultsEl.innerHTML = `
+      <div class="result-card ${type}">
+        <div class="result-header"><span class="dot"></span><span>${ok ? 'Success' : 'Error'}</span></div>
+        <div class="result-body">${summaryHtml}${filesHtml}${linksHtml}${errorHtml}</div>
+      </div>`;
+
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function flash(msg) {
+    const prev = resultsEl.innerHTML;
+    resultsEl.innerHTML = `<div class="loader" style="color:var(--red)">${esc(msg)}</div>`;
+    setTimeout(() => { resultsEl.innerHTML = prev; }, 3000);
+  }
+
+  function prIcon() {
+    return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 9v3a3 3 0 0 0 3 3h3"/><line x1="6" y1="9" x2="6" y2="21"/></svg>`;
+  }
+
+  function commitIcon() {
+    return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>`;
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Install (PWA) ────────────────────────────────────────────────
+  const installBtn = document.getElementById('installBtn');
+  let deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'inline-flex';
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') installBtn.style.display = 'none';
+    deferredPrompt = null;
+  });
+
+  window.addEventListener('appinstalled', () => { installBtn.style.display = 'none'; });
+
+  // ── Service worker ───────────────────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch((e) => console.warn('[sw]', e));
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────
+  loadApiKey();
+  if (apiKeyInput.value) fetchRepos(apiKeyInput.value);
+})();
+</script>
+</body>
+</html>
