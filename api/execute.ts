@@ -1,6 +1,30 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { routeToModel, type AITool } from "../lib/router";
 
+/**
+ * Main API handler for the `/api/execute` endpoint.
+ *
+ * Accepts a POST request containing a natural-language prompt and an optional
+ * AI tool selector, authenticates the caller via the `x-api-key` header, and
+ * routes the prompt to the chosen AI provider (Claude, Codex, or Copilot).
+ *
+ * @param req - The incoming Vercel request object.
+ * @param res - The Vercel response object used to send back results.
+ *
+ * @returns A JSON response with the following shape:
+ *   - On success (200): `{ status: "success", diff: string, summary: string }`
+ *   - On provider failure (502): `{ status: "error", message: string }`
+ *   - On client error (400/401/405): `{ status: "error", message: string }`
+ *
+ * @example
+ * // Request
+ * POST /api/execute
+ * Headers: { "x-api-key": "<valid key>" }
+ * Body:    { "prompt": "Add a health-check endpoint", "tool": "claude" }
+ *
+ * // Successful response (200)
+ * { "status": "success", "diff": "...", "summary": "..." }
+ */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ status: "error", message: "Method not allowed" });
