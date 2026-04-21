@@ -346,9 +346,20 @@
       animation: pulse 1.2s ease-in-out infinite;
     }
 
+    .mic-btn.transcribing {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+      animation: spin 1s linear infinite;
+    }
+
     @keyframes pulse {
       0%, 100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.4); }
       50%       { box-shadow: 0 0 0 8px rgba(248,113,113,0); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     .prompt-field {
@@ -1120,53 +1131,74 @@
     labelPR.classList.toggle('toggle-label-active', pr);
   });
 
-  // ── Voice input ──────────────────────────────────────────────────
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let recognition = null;
-  let isRecording  = false;
+  // ── Voice input (Groq whisper-large-v3-turbo) ────────────────────
+  let isRecording    = false;
+  let mediaRecorder  = null;
+  let audioChunks    = [];
 
-  if (!SR) {
-    micBtn.title = 'Speech not supported in this browser';
+  if (!navigator.mediaDevices?.getUserMedia) {
+    micBtn.title    = 'Microphone not supported in this browser';
     micBtn.style.opacity = '0.35';
     micBtn.disabled = true;
-  } else {
-    recognition = new SR();
-    recognition.continuous    = true;
-    recognition.interimResults= true;
-    recognition.lang          = 'en-US';
+  }
 
-    let committed = '';
-
-    recognition.onstart = () => {
-      isRecording = true;
-      micBtn.classList.add('recording');
-      committed = promptInput.value;
-    };
-
-    recognition.onresult = (e) => {
-      let interim = '', final = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const t = e.results[i][0].transcript;
-        if (e.results[i].isFinal) final += t; else interim += t;
+  async function startRec() {
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      toast('Microphone access denied');
+      return;
+    }
+    audioChunks = [];
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? 'audio/webm;codecs=opus'
+      : 'audio/webm';
+    mediaRecorder = new MediaRecorder(stream, { mimeType });
+    mediaRecorder.addEventListener('dataavailable', (e) => {
+      if (e.data.size > 0) audioChunks.push(e.data);
+    });
+    mediaRecorder.addEventListener('stop', async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(audioChunks, { type: mimeType });
+      isRecording = false;
+      micBtn.classList.remove('recording');
+      micBtn.classList.add('transcribing');
+      micBtn.disabled = true;
+      try {
+        const key = getApiKey();
+        const res = await fetch('/api/transcribe', {
+          method: 'POST',
+          headers: { 'x-api-key': key, 'Content-Type': mimeType },
+          body: blob,
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const { text } = await res.json();
+        if (text) {
+          const sep = promptInput.value ? ' ' : '';
+          promptInput.value += sep + text.trim();
+          autoResize(promptInput);
+        }
+      } catch (err) {
+        console.warn('[transcribe]', err);
+        toast('Transcription failed');
+      } finally {
+        micBtn.classList.remove('transcribing');
+        micBtn.disabled = false;
       }
-      if (final) committed += (committed ? ' ' : '') + final.trim();
-      promptInput.value = committed + (interim ? ' ' + interim : '');
-      autoResize(promptInput);
-    };
-
-    recognition.onerror = (e) => { if (e.error !== 'aborted') console.warn('[speech]', e.error); stopRec(); };
-    recognition.onend   = stopRec;
+    });
+    mediaRecorder.start();
+    isRecording = true;
+    micBtn.classList.add('recording');
   }
 
   function stopRec() {
-    isRecording = false;
-    micBtn.classList.remove('recording');
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
   }
 
   micBtn.addEventListener('click', () => {
-    if (!recognition) return;
-    if (isRecording) recognition.stop();
-    else { try { recognition.start(); } catch {} }
+    if (isRecording) stopRec();
+    else startRec();
   });
 
   // ── Auto-resize textarea ─────────────────────────────────────────
@@ -1196,7 +1228,7 @@
     if (!prompt) { toast('Enter a prompt.'); return; }
     if (!currentRepo) { toast('No repository selected.'); return; }
 
-    if (isRecording && recognition) recognition.stop();
+    if (isRecording) stopRec();
 
     const entryId = Date.now().toString(36) + Math.random().toString(36).slice(2);
     const entry = {
