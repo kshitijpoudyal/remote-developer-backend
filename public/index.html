@@ -32,6 +32,7 @@
       --yellow:    #fbbf24;
       --radius:    14px;
       --radius-sm: 10px;
+      --sidebar-w: 220px;
       --font:      -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
       --mono:      'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
     }
@@ -48,61 +49,109 @@
 
     /* ── App shell ─────────────────────────────────────── */
     #app {
+      display: flex;
       height: 100%;
+    }
+
+    /* ── Sidebar ────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      max-width: 480px;
-      margin: 0 auto;
-      position: relative;
+      padding: 0;
+      height: 100%;
+      position: sticky;
+      top: 0;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 22px 20px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-mark {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .logo-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--sub);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: background 0.15s, color 0.15s;
+      user-select: none;
+      border: none;
+      background: transparent;
+      text-align: left;
+      width: 100%;
+    }
+
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+    .nav-item svg { flex-shrink: 0; }
+
+    .sidebar-bottom {
+      padding: 12px 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Main content area ──────────────────────────────── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      height: 100%;
       overflow: hidden;
     }
 
-    /* ── Views ─────────────────────────────────────────── */
-    .view {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.3s;
-    }
-
-    .view.hidden { pointer-events: none; opacity: 0; }
-    .view.slide-left  { transform: translateX(-100%); }
-    .view.slide-right { transform: translateX(100%); }
-
-    /* ── Top bar ───────────────────────────────────────── */
-    .topbar {
+    /* ── Page header ────────────────────────────────────── */
+    .page-header {
       flex-shrink: 0;
+      padding: 20px 28px 18px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      padding: 14px 20px;
-      padding-top: calc(14px + env(safe-area-inset-top));
-      border-bottom: 1px solid var(--border);
+      gap: 14px;
       background: var(--bg);
-      gap: 12px;
     }
 
-    .topbar-title {
-      flex: 1;
-      font-size: 1.05rem;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      color: var(--text);
-    }
-
-    .topbar .logo-mark {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: -0.02em;
-    }
-
-    .icon-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+    .page-header-back {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
       border: 1px solid var(--border);
-      background: var(--surface);
+      background: transparent;
       color: var(--sub);
       cursor: pointer;
       display: flex;
@@ -111,56 +160,89 @@
       transition: border-color 0.15s, color 0.15s, background 0.15s;
       flex-shrink: 0;
     }
-    .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .icon-btn.back-btn { background: transparent; border-color: transparent; color: var(--sub); }
-    .icon-btn.back-btn:hover { color: var(--text); background: var(--surface); border-color: var(--border); }
 
-    /* ── Scrollable content ────────────────────────────── */
-    .scroll-content {
+    .page-header-back:hover { border-color: var(--accent); color: var(--accent); }
+
+    .page-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .page-subtitle {
+      font-size: 0.82rem;
+      color: var(--sub);
+      margin-top: 1px;
+    }
+
+    .page-header-actions { margin-left: auto; display: flex; gap: 8px; }
+
+    /* ── Pages ──────────────────────────────────────────── */
+    .page {
       flex: 1;
       overflow-y: auto;
       overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
+      display: none;
     }
 
-    /* ── HOME: Repo cards grid ─────────────────────────── */
-    .repo-grid {
-      padding: 20px 16px;
+    .page.active { display: block; }
+
+    /* ── HOME page ──────────────────────────────────────── */
+    .home-content {
+      padding: 28px;
+      max-width: 900px;
+    }
+
+    .section-header {
       display: flex;
-      flex-direction: column;
-      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
     }
 
-    .section-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
+    .section-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.09em;
       text-transform: uppercase;
       color: var(--sub);
-      margin-bottom: 4px;
-      padding-left: 4px;
+    }
+
+    .repo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
     }
 
     .repo-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 18px 20px;
+      padding: 20px;
       cursor: pointer;
       transition: border-color 0.15s, background 0.15s, transform 0.1s;
-      display: flex;
-      align-items: center;
-      gap: 16px;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
 
     .repo-card:hover   { border-color: var(--accent); background: var(--surface2); }
     .repo-card:active  { transform: scale(0.98); }
 
+    .repo-card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
     .repo-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
       background: var(--accent-dim);
       display: flex;
       align-items: center;
@@ -180,30 +262,45 @@
       text-overflow: ellipsis;
     }
 
-    .repo-meta {
-      font-size: 0.8rem;
+    .repo-slug {
+      font-size: 0.78rem;
       color: var(--sub);
       margin-top: 2px;
+      font-family: var(--mono);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
+    .repo-card-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+    }
+
+    .repo-stat {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      color: var(--sub);
+    }
+
     .repo-badge {
+      margin-left: auto;
       background: var(--accent-dim);
       color: var(--accent);
       font-size: 0.7rem;
       font-weight: 600;
-      padding: 3px 8px;
+      padding: 2px 8px;
       border-radius: 20px;
-      flex-shrink: 0;
     }
-
-    .chevron-icon { color: var(--muted); flex-shrink: 0; }
 
     .empty-state {
       text-align: center;
-      padding: 60px 24px;
+      padding: 64px 24px;
       color: var(--sub);
       font-size: 0.9rem;
       line-height: 1.8;
@@ -211,24 +308,49 @@
 
     .empty-state .empty-icon {
       font-size: 2.5rem;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       opacity: 0.5;
     }
 
-    /* ── HISTORY view ──────────────────────────────────── */
+    .empty-state-action {
+      margin-top: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .empty-state-action:hover { background: var(--accent); color: #fff; }
+
+    /* ── PROJECT page ───────────────────────────────────── */
+    .project-content {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
     .history-list {
-      padding: 16px;
+      flex: 1;
+      padding: 20px 28px;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      padding-bottom: 160px;
+      overflow-y: auto;
     }
 
     .history-item {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 14px 16px;
+      padding: 16px 18px;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -242,7 +364,6 @@
       font-size: 0.9rem;
       color: var(--text);
       line-height: 1.5;
-      font-family: var(--font);
     }
 
     .history-meta {
@@ -296,21 +417,32 @@
 
     .history-empty {
       text-align: center;
-      padding: 48px 24px;
+      padding: 56px 24px;
       color: var(--sub);
       font-size: 0.88rem;
+      line-height: 1.8;
+    }
+
+    /* ── Loading row ───────────────────────────────────── */
+    .loading-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(79,142,247,0.3);
+      border-radius: 10px;
+      font-size: 0.83rem;
+      color: var(--accent);
     }
 
     /* ── Bottom input bar ──────────────────────────────── */
     .input-bar {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      flex-shrink: 0;
       background: var(--bg);
       border-top: 1px solid var(--border);
-      padding: 12px 16px;
-      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      padding: 14px 28px;
+      padding-bottom: calc(14px + env(safe-area-inset-bottom));
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -324,9 +456,9 @@
 
     .mic-btn {
       flex-shrink: 0;
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
       border: 1.5px solid var(--border);
       background: var(--surface);
       color: var(--sub);
@@ -358,27 +490,22 @@
       50%       { box-shadow: 0 0 0 8px rgba(248,113,113,0); }
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    .prompt-field {
-      flex: 1;
-      position: relative;
-    }
+    .prompt-field { flex: 1; position: relative; }
 
     #promptInput {
       width: 100%;
       background: var(--surface);
       border: 1.5px solid var(--border);
-      border-radius: 14px;
+      border-radius: 12px;
       color: var(--text);
       font-family: var(--font);
       font-size: 0.95rem;
-      padding: 12px 16px;
+      padding: 11px 16px;
       outline: none;
       resize: none;
-      min-height: 48px;
+      min-height: 44px;
       max-height: 140px;
       line-height: 1.5;
       transition: border-color 0.15s;
@@ -390,9 +517,9 @@
 
     .send-btn {
       flex-shrink: 0;
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
       border: none;
       background: var(--accent);
       color: #fff;
@@ -411,7 +538,6 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 2px;
     }
 
     /* ── Toggle ────────────────────────────────────────── */
@@ -426,7 +552,7 @@
 
     .toggle-label-active { color: var(--text); font-weight: 500; }
 
-    .toggle { position: relative; width: 38px; height: 20px; flex-shrink: 0; }
+    .toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
     .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
 
     .track {
@@ -450,28 +576,30 @@
     }
 
     .toggle input:checked ~ .track { background: var(--accent); }
-    .toggle input:checked ~ .track::after { transform: translateX(18px); }
+    .toggle input:checked ~ .track::after { transform: translateX(16px); }
 
-    /* ── SETTINGS view ─────────────────────────────────── */
+    /* ── SETTINGS page ─────────────────────────────────── */
     .settings-content {
-      padding: 20px 16px;
+      padding: 28px;
+      max-width: 600px;
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 28px;
     }
 
-    .settings-section {
+    .settings-group {
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
 
-    .settings-section-title {
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
+    .settings-group-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.09em;
       text-transform: uppercase;
       color: var(--sub);
-      padding-left: 4px;
+      padding-left: 2px;
     }
 
     .settings-card {
@@ -484,7 +612,7 @@
     .settings-row {
       display: flex;
       align-items: center;
-      padding: 14px 18px;
+      padding: 15px 18px;
       gap: 14px;
       border-bottom: 1px solid var(--border);
     }
@@ -492,8 +620,8 @@
     .settings-row:last-child { border-bottom: none; }
 
     .settings-row-icon {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       border-radius: 10px;
       display: flex;
       align-items: center;
@@ -525,7 +653,7 @@
       text-overflow: ellipsis;
     }
 
-    .settings-input-wrap { display: flex; align-items: center; gap: 8px; }
+    .settings-input-wrap { display: flex; align-items: center; gap: 8px; width: 100%; }
 
     .settings-input {
       flex: 1;
@@ -535,7 +663,7 @@
       color: var(--text);
       font-family: var(--mono);
       font-size: 0.82rem;
-      padding: 7px 12px;
+      padding: 8px 12px;
       outline: none;
       transition: border-color 0.15s;
       min-width: 0;
@@ -545,7 +673,7 @@
 
     .save-btn {
       flex-shrink: 0;
-      padding: 7px 14px;
+      padding: 8px 16px;
       background: var(--accent);
       border: none;
       border-radius: 8px;
@@ -561,17 +689,17 @@
     /* Provider selector */
     .provider-options {
       display: flex;
-      gap: 8px;
+      gap: 10px;
     }
 
     .provider-opt {
       flex: 1;
-      padding: 10px 8px;
+      padding: 14px 10px;
       border: 1.5px solid var(--border);
-      border-radius: 10px;
-      background: var(--bg);
+      border-radius: var(--radius);
+      background: var(--surface);
       color: var(--sub);
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.15s;
@@ -579,10 +707,10 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
     }
 
-    .provider-opt .p-icon { font-size: 1.2rem; }
+    .provider-opt .p-icon { font-size: 1.4rem; }
 
     .provider-opt:hover { border-color: var(--accent); color: var(--text); }
 
@@ -592,7 +720,7 @@
       color: var(--accent);
     }
 
-    /* ── Loading spinner ───────────────────────────────── */
+    /* ── Spinner ────────────────────────────────────────── */
     .spinner {
       width: 16px; height: 16px;
       border: 2px solid rgba(255,255,255,0.3);
@@ -602,12 +730,15 @@
       display: inline-block;
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner.accent {
+      border-color: rgba(79,142,247,0.3);
+      border-top-color: var(--accent);
+    }
 
     /* ── Toast ─────────────────────────────────────────── */
     .toast {
       position: fixed;
-      bottom: 100px;
+      bottom: 28px;
       left: 50%;
       transform: translateX(-50%) translateY(20px);
       background: var(--surface2);
@@ -631,7 +762,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 14px;
+      padding: 7px 14px;
       border: 1px solid var(--border);
       border-radius: 8px;
       background: transparent;
@@ -639,28 +770,61 @@
       font-size: 0.78rem;
       cursor: pointer;
       transition: border-color 0.15s, color 0.15s;
+      width: 100%;
+      justify-content: center;
     }
 
     .install-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-    /* ── Loader overlay ────────────────────────────────── */
-    .loading-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 16px;
-      background: var(--accent-dim);
-      border: 1px solid rgba(79,142,247,0.3);
-      border-radius: 10px;
-      font-size: 0.83rem;
-      color: var(--accent);
-      margin: 0 16px;
+    /* ── Mobile: bottom nav ─────────────────────────────── */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 8px 0;
+      padding-bottom: calc(8px + env(safe-area-inset-bottom));
+      z-index: 50;
     }
 
-    @media (max-width: 360px) {
-      .topbar { padding: 12px 14px; }
-      .repo-grid { padding: 14px 12px; }
-      .history-list { padding: 12px; }
+    .mobile-nav-items {
+      display: flex;
+    }
+
+    .mobile-nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 8px;
+      cursor: pointer;
+      color: var(--sub);
+      font-size: 0.68rem;
+      border: none;
+      background: transparent;
+      transition: color 0.15s;
+    }
+
+    .mobile-nav-item.active { color: var(--accent); }
+
+    @media (max-width: 640px) {
+      .sidebar { display: none; }
+      .mobile-nav { display: block; }
+
+      .home-content { padding: 18px 16px 80px; }
+      .settings-content { padding: 18px 16px 80px; }
+      .history-list { padding: 14px 16px; }
+      .input-bar { padding: 12px 16px calc(12px + env(safe-area-inset-bottom) + 60px); }
+
+      .page-header { padding: 14px 16px; }
+      .page-title { font-size: 1rem; }
+
+      .repo-grid { grid-template-columns: 1fr; }
+      .provider-options { gap: 8px; }
     }
   </style>
 </head>
@@ -668,101 +832,134 @@
 <div id="app">
 
   <!-- ══════════════════════════════════════════════
-       VIEW: HOME
+       SIDEBAR
   ══════════════════════════════════════════════ -->
-  <div class="view" id="viewHome">
-    <div class="topbar">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
       <span class="logo-mark">&#x25B8;</span>
-      <span class="topbar-title">Dev Portal</span>
-      <button class="install-btn" id="installBtn" style="display:none" title="Install app">
+      <span class="logo-name">Dev Portal</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-nav="home">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+      </button>
+      <button class="nav-item" data-nav="settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <button class="install-btn" id="installBtn" style="display:none">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
-        Install
-      </button>
-      <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
+        Install App
       </button>
     </div>
-    <div class="scroll-content">
-      <div class="repo-grid" id="repoGrid">
-        <div class="empty-state" id="homeEmptyState">
-          <div class="empty-icon">🔑</div>
-          <div>Add your API key in Settings<br>to load your repositories.</div>
-        </div>
-      </div>
-    </div>
-  </div>
+  </aside>
 
   <!-- ══════════════════════════════════════════════
-       VIEW: HISTORY (repo detail)
+       MAIN CONTENT
   ══════════════════════════════════════════════ -->
-  <div class="view hidden slide-right" id="viewHistory">
-    <div class="topbar">
-      <button class="icon-btn back-btn" id="historyBackBtn" aria-label="Back">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
-      </button>
-      <span class="topbar-title" id="historyTitle">Repository</span>
-    </div>
+  <main class="main">
 
-    <div class="scroll-content" id="historyScroll">
-      <div id="loadingIndicator" style="display:none; padding-top:12px;">
-        <div class="loading-row">
-          <div class="spinner" style="border-top-color:var(--accent);border-color:rgba(79,142,247,0.3);"></div>
-          <span id="loadingLabel">Talking to Claude…</span>
+    <!-- PAGE: HOME -->
+    <div class="page active" id="pageHome">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Projects</div>
+          <div class="page-subtitle">Select a repository to get started</div>
+        </div>
+        <div class="page-header-actions">
+          <button class="install-btn" id="installBtnMobile" style="display:none">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+            Install
+          </button>
         </div>
       </div>
-      <div class="history-list" id="historyList">
-        <div class="history-empty" id="historyEmptyState">No prompts yet.<br>Type something below to get started.</div>
+      <div class="home-content">
+        <div class="section-header">
+          <span class="section-title">Repositories</span>
+        </div>
+        <div class="repo-grid" id="repoGrid">
+          <div class="empty-state" id="homeEmptyState" style="grid-column:1/-1">
+            <div class="empty-icon">🔑</div>
+            <div>Add your API key in Settings<br>to load your repositories.</div>
+            <button class="empty-state-action" data-nav="settings">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Open Settings
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="input-bar">
-      <div class="input-bar-options">
-        <div class="toggle-row">
-          <span id="labelCommit" class="toggle-label-active">Direct commit</span>
-          <label class="toggle" aria-label="Create pull request">
-            <input type="checkbox" id="prToggle" />
-            <span class="track"></span>
-          </label>
-          <span id="labelPR">Create PR</span>
-        </div>
-      </div>
-      <div class="input-bar-row">
-        <button class="mic-btn" id="micBtn" title="Voice input" aria-label="Toggle voice input">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="9" y="2" width="6" height="13" rx="3"/>
-            <path d="M5 10a7 7 0 0 0 14 0"/>
-            <line x1="12" y1="19" x2="12" y2="23"/>
-            <line x1="9" y1="23" x2="15" y2="23"/>
-          </svg>
+    <!-- PAGE: PROJECT (repo detail) -->
+    <div class="page" id="pageProject">
+      <div class="page-header">
+        <button class="page-header-back" id="projectBackBtn" aria-label="Back to Home">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
         </button>
-        <div class="prompt-field">
-          <textarea id="promptInput" placeholder="Describe the change you want…" spellcheck="false" rows="1"></textarea>
+        <div>
+          <div class="page-title" id="projectTitle">Repository</div>
+          <div class="page-subtitle" id="projectSubtitle"></div>
         </div>
-        <button class="send-btn" id="submitBtn" title="Send" aria-label="Send prompt">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
+      </div>
+      <div class="project-content">
+        <div class="history-list" id="historyList">
+          <div id="loadingIndicator" style="display:none;">
+            <div class="loading-row">
+              <div class="spinner accent"></div>
+              <span id="loadingLabel">Talking to Claude…</span>
+            </div>
+          </div>
+          <div class="history-empty" id="historyEmptyState">No prompts yet.<br>Type something below to get started.</div>
+        </div>
+
+        <div class="input-bar">
+          <div class="input-bar-options">
+            <div class="toggle-row">
+              <span id="labelCommit" class="toggle-label-active">Direct commit</span>
+              <label class="toggle" aria-label="Create pull request">
+                <input type="checkbox" id="prToggle" />
+                <span class="track"></span>
+              </label>
+              <span id="labelPR">Create PR</span>
+            </div>
+          </div>
+          <div class="input-bar-row">
+            <button class="mic-btn" id="micBtn" title="Voice input" aria-label="Toggle voice input">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="2" width="6" height="13" rx="3"/>
+                <path d="M5 10a7 7 0 0 0 14 0"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="9" y1="23" x2="15" y2="23"/>
+              </svg>
+            </button>
+            <div class="prompt-field">
+              <textarea id="promptInput" placeholder="Describe the change you want…" spellcheck="false" rows="1"></textarea>
+            </div>
+            <button class="send-btn" id="submitBtn" title="Send" aria-label="Send prompt">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- ══════════════════════════════════════════════
-       VIEW: SETTINGS
-  ══════════════════════════════════════════════ -->
-  <div class="view hidden slide-right" id="viewSettings">
-    <div class="topbar">
-      <button class="icon-btn back-btn" id="settingsBackBtn" aria-label="Back">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 5-7 7 7 7"/></svg>
-      </button>
-      <span class="topbar-title">Settings</span>
-    </div>
-    <div class="scroll-content">
+    <!-- PAGE: SETTINGS -->
+    <div class="page" id="pageSettings">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Settings</div>
+          <div class="page-subtitle">Configure your API key and preferences</div>
+        </div>
+      </div>
       <div class="settings-content">
 
-        <div class="settings-section">
-          <div class="settings-section-title">Authentication</div>
+        <div class="settings-group">
+          <div class="settings-group-title">Authentication</div>
           <div class="settings-card">
             <div class="settings-row">
               <div class="settings-row-icon blue">
@@ -773,7 +970,7 @@
                 <div class="settings-row-value" id="apiKeyPreview">Not set</div>
               </div>
             </div>
-            <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+            <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:8px; padding:16px 18px;">
               <div class="settings-input-wrap">
                 <input type="password" class="settings-input" id="apiKeyInput" placeholder="Paste your API key…" autocomplete="off" spellcheck="false" />
                 <button class="save-btn" id="saveApiKeyBtn">Save</button>
@@ -782,8 +979,8 @@
           </div>
         </div>
 
-        <div class="settings-section">
-          <div class="settings-section-title">AI Provider</div>
+        <div class="settings-group">
+          <div class="settings-group-title">AI Provider</div>
           <div class="provider-options" id="providerOptions">
             <button class="provider-opt active" data-provider="claude">
               <span class="p-icon">🤖</span>
@@ -800,8 +997,8 @@
           </div>
         </div>
 
-        <div class="settings-section">
-          <div class="settings-section-title">About</div>
+        <div class="settings-group">
+          <div class="settings-group-title">About</div>
           <div class="settings-card">
             <div class="settings-row">
               <div class="settings-row-icon muted">
@@ -817,9 +1014,23 @@
 
       </div>
     </div>
-  </div>
 
+  </main>
 </div>
+
+<!-- Mobile bottom nav -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-items">
+    <button class="mobile-nav-item active" data-nav="home">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </button>
+    <button class="mobile-nav-item" data-nav="settings">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </div>
+</nav>
 
 <div class="toast" id="toast"></div>
 
@@ -830,22 +1041,22 @@
   // ── Storage keys ─────────────────────────────────────────────────
   const LS_APIKEY    = 'devportal_apikey';
   const LS_PROVIDER  = 'devportal_provider';
-  const LS_HISTORY   = 'devportal_history';  // { [repoAlias]: HistoryEntry[] }
+  const LS_HISTORY   = 'devportal_history';
 
   // ── State ────────────────────────────────────────────────────────
-  let currentRepo  = null; // { alias, repo }
+  let currentRepo  = null;
   let isRunning    = false;
   let repos        = [];
 
   // ── DOM refs ─────────────────────────────────────────────────────
-  const viewHome     = document.getElementById('viewHome');
-  const viewHistory  = document.getElementById('viewHistory');
-  const viewSettings = document.getElementById('viewSettings');
+  const pageHome     = document.getElementById('pageHome');
+  const pageProject  = document.getElementById('pageProject');
+  const pageSettings = document.getElementById('pageSettings');
 
-  const repoGrid        = document.getElementById('repoGrid');
-  const homeEmptyState  = document.getElementById('homeEmptyState');
-  const historyList     = document.getElementById('historyList');
-  const historyTitle    = document.getElementById('historyTitle');
+  const repoGrid          = document.getElementById('repoGrid');
+  const historyList       = document.getElementById('historyList');
+  const projectTitle      = document.getElementById('projectTitle');
+  const projectSubtitle   = document.getElementById('projectSubtitle');
   const historyEmptyState = document.getElementById('historyEmptyState');
   const loadingIndicator  = document.getElementById('loadingIndicator');
   const loadingLabel      = document.getElementById('loadingLabel');
@@ -857,64 +1068,43 @@
   const labelCommit  = document.getElementById('labelCommit');
   const labelPR      = document.getElementById('labelPR');
 
-  const apiKeyInput  = document.getElementById('apiKeyInput');
-  const apiKeyPreview= document.getElementById('apiKeyPreview');
-  const saveApiKeyBtn= document.getElementById('saveApiKeyBtn');
+  const apiKeyInput   = document.getElementById('apiKeyInput');
+  const apiKeyPreview = document.getElementById('apiKeyPreview');
+  const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
 
-  const toastEl      = document.getElementById('toast');
+  const toastEl = document.getElementById('toast');
 
   // ── Navigation ───────────────────────────────────────────────────
-  function showView(target, direction = 'right') {
-    const views = [viewHome, viewHistory, viewSettings];
-    views.forEach(v => {
-      v.classList.add('hidden');
-      v.classList.remove('slide-left', 'slide-right');
+  const PAGES = { home: pageHome, project: pageProject, settings: pageSettings };
+
+  function showPage(name) {
+    Object.entries(PAGES).forEach(([key, el]) => {
+      el.classList.toggle('active', key === name);
     });
 
-    if (direction === 'right') {
-      target.classList.remove('hidden', 'slide-right');
-      target.classList.add('slide-left');
-      setTimeout(() => target.classList.remove('slide-left'), 10);
-    } else {
-      target.classList.remove('hidden', 'slide-left');
-      target.classList.add('slide-right');
-      setTimeout(() => target.classList.remove('slide-right'), 10);
-    }
-  }
+    // Update sidebar nav
+    document.querySelectorAll('.nav-item[data-nav]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.nav === name);
+    });
 
-  function navigateTo(view) {
-    view.classList.remove('hidden', 'slide-left', 'slide-right');
-    const views = [viewHome, viewHistory, viewSettings].filter(v => v !== view);
-    views.forEach(v => {
-      v.classList.add('hidden');
+    // Update mobile nav (only home/settings tabs)
+    document.querySelectorAll('.mobile-nav-item[data-nav]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.nav === name);
     });
   }
 
-  function pushView(view) {
-    const all = [viewHome, viewHistory, viewSettings];
-    const cur = all.find(v => !v.classList.contains('hidden'));
-
-    if (cur) {
-      cur.classList.add('hidden');
-    }
-    view.classList.remove('hidden', 'slide-right');
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => { /* already visible */ });
+  // Sidebar + mobile nav click
+  document.querySelectorAll('[data-nav]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.nav;
+      if (target === 'home' || target === 'settings') showPage(target);
     });
-  }
+  });
 
-  function popView(to) {
-    const all = [viewHome, viewHistory, viewSettings];
-    all.forEach(v => v.classList.add('hidden'));
-    to.classList.remove('hidden');
-  }
-
-  document.getElementById('settingsBtn').addEventListener('click', () => pushView(viewSettings));
-  document.getElementById('settingsBackBtn').addEventListener('click', () => popView(viewHome));
-
-  document.getElementById('historyBackBtn').addEventListener('click', () => {
-    popView(viewHome);
+  // Back button from project → home
+  document.getElementById('projectBackBtn').addEventListener('click', () => {
     currentRepo = null;
+    showPage('home');
   });
 
   // ── Toast ────────────────────────────────────────────────────────
@@ -981,14 +1171,12 @@
     catch { return {}; }
   }
 
-  function getRepoHistory(alias) {
-    return getAllHistory()[alias] || [];
-  }
+  function getRepoHistory(alias) { return getAllHistory()[alias] || []; }
 
   function saveHistoryEntry(alias, entry) {
     const all = getAllHistory();
     if (!all[alias]) all[alias] = [];
-    all[alias].unshift(entry); // newest first
+    all[alias].unshift(entry);
     if (all[alias].length > 100) all[alias] = all[alias].slice(0, 100);
     localStorage.setItem(LS_HISTORY, JSON.stringify(all));
   }
@@ -1008,12 +1196,10 @@
     const entries = getRepoHistory(currentRepo.alias);
     historyEmptyState.style.display = entries.length ? 'none' : 'block';
 
-    // Remove old items but keep the empty state
     Array.from(historyList.querySelectorAll('.history-item')).forEach(el => el.remove());
 
     entries.forEach(entry => {
-      const el = buildHistoryItem(entry);
-      historyList.appendChild(el);
+      historyList.appendChild(buildHistoryItem(entry));
     });
   }
 
@@ -1028,14 +1214,10 @@
 
     let linksHtml = '';
     if (entry.pr_url) {
-      linksHtml += `<a class="link-chip" href="${esc(entry.pr_url)}" target="_blank" rel="noopener">
-        ${prIcon()} PR
-      </a>`;
+      linksHtml += `<a class="link-chip" href="${esc(entry.pr_url)}" target="_blank" rel="noopener">${prIcon()} PR</a>`;
     }
     if (entry.commit_url) {
-      linksHtml += `<a class="link-chip" href="${esc(entry.commit_url)}" target="_blank" rel="noopener">
-        ${commitIcon()} Commit
-      </a>`;
+      linksHtml += `<a class="link-chip" href="${esc(entry.commit_url)}" target="_blank" rel="noopener">${commitIcon()} Commit</a>`;
     }
 
     const statusLabel = { success: 'Done', error: 'Failed', running: 'Running' }[entry.status] || entry.status;
@@ -1052,35 +1234,27 @@
     return div;
   }
 
-  function updateHistoryItemUI(id, entry) {
-    const el = historyList.querySelector(`[data-id="${id}"]`);
-    if (el) {
-      const fresh = buildHistoryItem(entry);
-      el.replaceWith(fresh);
-    }
-  }
-
   // ── Repos ────────────────────────────────────────────────────────
   async function fetchRepos(key) {
-    repoGrid.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div>Loading repos…</div>';
+    repoGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⏳</div>Loading repos…</div>';
     try {
       const res = await fetch('/api/repos', { headers: { 'x-api-key': key } });
       if (res.status === 401) {
-        repoGrid.innerHTML = '<div class="empty-state"><div class="empty-icon">🔒</div>Invalid API key.<br>Check Settings.</div>';
+        repoGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🔒</div>Invalid API key.<br>Check Settings.</div>';
         return;
       }
       if (!res.ok) throw new Error();
       repos = (await res.json()) || [];
       renderRepoGrid();
     } catch {
-      repoGrid.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>Failed to load repos.</div>';
+      repoGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div>Failed to load repos.</div>';
     }
   }
 
   function renderRepoGrid() {
     repoGrid.innerHTML = '';
     if (!repos.length) {
-      repoGrid.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>No repositories found.</div>';
+      repoGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📭</div>No repositories found.</div>';
       return;
     }
 
@@ -1090,26 +1264,34 @@
       const card = document.createElement('div');
       card.className = 'repo-card';
 
-      const entries = all[alias] || [];
+      const entries  = all[alias] || [];
       const histCount = entries.length;
       const lastEntry = entries[0];
-      const lastTime = lastEntry
+      const lastTime  = lastEntry
         ? new Date(lastEntry.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric' })
         : null;
 
       card.innerHTML = `
-        <div class="repo-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
-            <path d="M9 18c-4.51 2-5-2-7-2"/>
-          </svg>
+        <div class="repo-card-top">
+          <div class="repo-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
+              <path d="M9 18c-4.51 2-5-2-7-2"/>
+            </svg>
+          </div>
+          <div class="repo-info">
+            <div class="repo-name">${esc(alias)}</div>
+            <div class="repo-slug">${esc(repo)}</div>
+          </div>
         </div>
-        <div class="repo-info">
-          <div class="repo-name">${esc(alias)}</div>
-          <div class="repo-meta">${esc(repo)}${lastTime ? ` · ${lastTime}` : ''}</div>
+        <div class="repo-card-footer">
+          <div class="repo-stat">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+            ${histCount} commit${histCount !== 1 ? 's' : ''}
+          </div>
+          ${lastTime ? `<div class="repo-stat"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${lastTime}</div>` : ''}
+          ${histCount > 0 ? `<span class="repo-badge">${histCount}</span>` : ''}
         </div>
-        ${histCount > 0 ? `<span class="repo-badge">${histCount}</span>` : ''}
-        <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
       `;
 
       card.addEventListener('click', () => openRepo({ alias, repo }));
@@ -1119,9 +1301,10 @@
 
   function openRepo(repoObj) {
     currentRepo = repoObj;
-    historyTitle.textContent = repoObj.alias;
+    projectTitle.textContent = repoObj.alias;
+    projectSubtitle.textContent = repoObj.repo;
     renderHistory();
-    pushView(viewHistory);
+    showPage('project');
   }
 
   // ── Toggle ───────────────────────────────────────────────────────
@@ -1131,10 +1314,10 @@
     labelPR.classList.toggle('toggle-label-active', pr);
   });
 
-  // ── Voice input (Groq whisper-large-v3-turbo) ────────────────────
-  let isRecording    = false;
-  let mediaRecorder  = null;
-  let audioChunks    = [];
+  // ── Voice input ──────────────────────────────────────────────────
+  let isRecording   = false;
+  let mediaRecorder = null;
+  let audioChunks   = [];
 
   if (!navigator.mediaDevices?.getUserMedia) {
     micBtn.title    = 'Microphone not supported in this browser';
@@ -1250,12 +1433,9 @@
     loadingLabel.textContent = `Asking ${providerName}…`;
     loadingIndicator.style.display = 'block';
 
-    const historyScroll = document.getElementById('historyScroll');
-    historyScroll.scrollTop = 0;
+    historyList.scrollTop = 0;
 
-    const body = { prompt, create_pr: prToggle.checked };
-    body.repo = currentRepo.alias;
-    body.tool = getProvider();
+    const body = { prompt, create_pr: prToggle.checked, repo: currentRepo.alias, tool: getProvider() };
 
     try {
       const res  = await fetch('/api/execute', {
@@ -1266,14 +1446,12 @@
       const data = await res.json();
       const ok   = res.ok && data.status === 'success';
 
-      const updates = {
+      updateHistoryEntry(currentRepo.alias, entryId, {
         status:     ok ? 'success' : 'error',
-        summary:    data.summary   || '',
-        commit_url: data.commit_url|| '',
-        pr_url:     data.pr_url    || '',
-      };
-
-      updateHistoryEntry(currentRepo.alias, entryId, updates);
+        summary:    data.summary    || '',
+        commit_url: data.commit_url || '',
+        pr_url:     data.pr_url     || '',
+      });
       renderHistory();
     } catch (err) {
       updateHistoryEntry(currentRepo.alias, entryId, { status: 'error', summary: err.message || 'Network error' });
@@ -1300,23 +1478,37 @@
 
   // ── PWA install ──────────────────────────────────────────────────
   const installBtn = document.getElementById('installBtn');
+  const installBtnMobile = document.getElementById('installBtnMobile');
   let deferredPrompt = null;
+
+  function showInstallBtn() {
+    installBtn.style.display = 'inline-flex';
+    installBtnMobile.style.display = 'inline-flex';
+  }
+
+  function hideInstallBtn() {
+    installBtn.style.display = 'none';
+    installBtnMobile.style.display = 'none';
+  }
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    installBtn.style.display = 'inline-flex';
+    showInstallBtn();
   });
 
-  installBtn.addEventListener('click', async () => {
+  async function handleInstall() {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') installBtn.style.display = 'none';
+    if (outcome === 'accepted') hideInstallBtn();
     deferredPrompt = null;
-  });
+  }
 
-  window.addEventListener('appinstalled', () => { installBtn.style.display = 'none'; });
+  installBtn.addEventListener('click', handleInstall);
+  installBtnMobile.addEventListener('click', handleInstall);
+
+  window.addEventListener('appinstalled', hideInstallBtn);
 
   // ── Service worker ───────────────────────────────────────────────
   if ('serviceWorker' in navigator) {
@@ -1331,8 +1523,6 @@
     const key = getApiKey();
     if (key) {
       fetchRepos(key);
-    } else {
-      repoGrid.innerHTML = '<div class="empty-state"><div class="empty-icon">🔑</div>Add your API key in Settings<br>to load your repositories.</div>';
     }
   }
 
