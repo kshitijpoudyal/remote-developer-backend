@@ -138,7 +138,7 @@ export async function callClaude(
   });
 
   const content = message.content[0];
-  if (content.type !== "text") throw new Error("Unexpected response type from Claude");
+  if (!content || content.type !== "text") throw new Error("Unexpected response type from Claude");
 
   const text = content.text.trim();
   const summary = prompt.slice(0, 100);
